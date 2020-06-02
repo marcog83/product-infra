@@ -6,6 +6,8 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   # Set the table name here so we can use it while testing locally
   tableName: ${self:custom.stage}-ext-product
+  ruleTableName: ${self:custom.stage}-ext-rule
+  attributeTableName: ${self:custom.stage}-ext-attribute
 provider:
   name: aws
   stage: dev
@@ -30,6 +32,32 @@ resources:
             KeyType: RANGE
         # Set the capacity to auto-scale
         BillingMode: PAY_PER_REQUEST
+    RuleTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        # Generate a name based on the stage
+        TableName: ${self:custom.ruleTableName}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: RANGE
+        # Set the capacity to auto-scale
+        BillingMode: PAY_PER_REQUEST
+    AttributeTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        # Generate a name based on the stage
+        TableName: ${self:custom.attributeTableName}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: RANGE
+        # Set the capacity to auto-scale
+        BillingMode: PAY_PER_REQUEST
 
   Outputs:
     ProductTableArn:
@@ -39,3 +67,17 @@ resources:
           - Arn
       Export:
         Name: ${self:custom.stage}-ExtProductTableArn
+    RuleTableArn:
+      Value:
+        Fn::GetAtt:
+          - RuleTable
+          - Arn
+      Export:
+        Name: ${self:custom.stage}-ExtRuleTableArn
+    AttributeTableArn:
+      Value:
+        Fn::GetAtt:
+          - AttributeTable
+          - Arn
+      Export:
+        Name: ${self:custom.stage}-ExtAttributeTableArn
